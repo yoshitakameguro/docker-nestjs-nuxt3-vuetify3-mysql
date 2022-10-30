@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  backend:
+    container_name: backend
+    build: ./docker/nestjs/.
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    tty: true
+    ports:
+      - "3001:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: db
+    image: mysql:8.0.31
+    restart: always
+    ports:
+      - '3306:3306'
+    volumes:
+      - volume-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: develop
+      MYSQL_USER: develop
+      MYSQL_PASSWORD: password
+    healthcheck:
+      test: "exit 0"
+  frontend:
+    container_name: frontend
+    build: ./docker/nuxt/.
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    tty: true
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      CHOKIDAR_USEPOLLING: true
+    ports:
+      - "3000:3000"
+      - "24679:24679"
+volumes:
+  volume-data:
